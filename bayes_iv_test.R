@@ -11,7 +11,12 @@ library(AER)
 n <- 1000
 z <- rnorm(n)
 x <- 1 + 2*z + rnorm(n)
-y <- 3 + 1.5*2*z + rnorm(n)
+
+# True model specified by instrument
+y <- 3 + 1.5*2*x
+
+# Endogenous dependent variable
+
 
 d <- data.frame(z, x, y)
 
