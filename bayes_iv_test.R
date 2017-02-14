@@ -13,10 +13,11 @@ z <- rnorm(n)
 x <- 1 + 2*z + rnorm(n)
 
 # True model specified by instrument
-y <- 3 + 1.5*2*x
+e <- rnorm(n, 1)
+y <- 3 + 1.5*2*x + e
 
 # Endogenous dependent variable
-
+u <- x + e
 
 d <- data.frame(z, x, y)
 
