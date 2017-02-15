@@ -1,0 +1,28 @@
+---
+title: "Revisiting valid instruments: A Bayesian approach"
+author: Jonathan Sweeney
+institute: University of Hawaii at Manoa
+date: Applied Micro Workshop, February 21, 2017
+output: 
+  beamer_presentation:
+    highlight: kate
+---
+
+## In the morning
+```{r}
+# Generate data
+n <- 1000
+z <- rnorm(n)
+x <- 1 + 2*z + rnorm(n)
+
+# True model specified by instrument
+e <- rnorm(n, 1)
+y <- 3 + 1.5*2*x + e
+```
+
+## Getting up
+
+- Turn off alarm
+- Get out of bed
+
+## Breakfast
