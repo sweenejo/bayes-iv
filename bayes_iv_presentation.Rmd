@@ -7,6 +7,21 @@ output:
   beamer_presentation:
     highlight: kate
 ---
+## Valid Instruments
+
+- Satisfy the exclusion restriction
+- Satisfy the monotonicity assumption
+- 
+
+## Valid Instruments
+
+- These assumptions are relevant whether you use IVs to evaluate causality or in traditional simultaneous equation models.
+
+## The Phenomenological Bayesian Approach
+
+- Causal inference is framed in terms of potentially observable outcomes for all units to all treatments.
+- What about the counterfactual problem?
+-- It doesn't exist for Bayesians.
 
 ## In the morning
 ```{r}
