@@ -39,6 +39,13 @@ vector[n] dobs; // Individual treatment: 0 is not treated, 1 treated
 vector[n] yobs; // Individual outcome: 0 is dead, 1 is alive
 }
 
+transformed data {
+int N_c;
+int N_1;
+N_c=9663+12;
+N_1=1;
+}
+
 parameters {
 real<lower=-10,upper=10> eta_c0;
 real<lower=-10,upper=10> eta_c1;
@@ -48,8 +55,7 @@ real<lower=0,upper=1> omega; // Proportion of sample who are compliers
 }
 
 transformed parameters {
-int<lower=0> N_c;
-N_c=9663+12
+
 }
 
 model {
@@ -61,8 +67,23 @@ eta_n1 ~ uniform(-10,10);
 omega ~ uniform(0,1);
 
 // Postieror distribution (Note: written as the product of 5 distributions)
-transpose(yt[i]) ~ binomial(N_c, omega);
+
+target += binomial_lpmf(N_c | N_1, omega);
+
+//if()
+//target += binomial(yobs[i] | eta_c0)
+
+//else if ()
+
+//else if ()
+
+//else ()
+
+
 }
 "
 
+fit <- stan(model_code = model, data=sommer_zeger, iter = 1000, chains = 3)
+
+print(fit)
 

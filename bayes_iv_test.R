@@ -3,23 +3,33 @@
 # Install required packages
 #install.packages("rstan","AER")
 
+# clear memory
+rm(list=ls())
+
 # Load necessary packages
 library(rstan)
 library(AER)
 
-# Generate data
+# Generate instrument data
 n <- 1000
 z <- rnorm(n)
-x <- 1 + 2*z + rnorm(n)
 
-# True model specified by instrument
-e <- rnorm(n, 1)
-y <- 3 + 1.5*2*x + e
+# Specify error terms with some correlation (This makes OLS inconsistent)
+e <- rnorm(n, 0.1)
+#u <- 0.5 * e + rnorm(n, 0.01)
+u <- rnorm(n, 0.1)
 
-# Endogenous dependent variable
-u <- x + e
+# Specify that the regressor of interest is correlated with the error term.
+
+# Generate 1st and 2nd stage outcomes
+x <- 1 + 2 * z + 0.5 * u + e
+y <- 3 + 1.5 * x + u
 
 d <- data.frame(z, x, y)
+
+# OLS results (inconsistent)
+ols <- lm(y ~ x)
+summary(ols)
 
 # Baseline results
 iv <- ivreg(y ~ x | z, data = d)
@@ -45,16 +55,19 @@ real<lower=-1,upper=1> rho_yt;
 transformed parameters {
 cov_matrix[2] Sigma_yt;
 matrix[n,2] yt_hat;
-Sigma_yt[1,1] <- pow(sigma_y,2);
-Sigma_yt[2,2] <- pow(sigma_t,2);
-Sigma_yt[1,2] <- rho_yt*sigma_y*sigma_t;
-Sigma_yt[2,1] <- Sigma_yt[1,2];
+Sigma_yt[1,1] = pow(sigma_y,2);
+Sigma_yt[2,2] = pow(sigma_t,2);
+Sigma_yt[1,2] = rho_yt*sigma_y*sigma_t;
+Sigma_yt[2,1] = Sigma_yt[1,2];
+
+// Specify model
 for (i in 1:n) {
-yt_hat[i,2] <- g + d*z[i];
-yt_hat[i,1] <- a + b*yt[i,2];
+yt_hat[i,2] = g + d*z[i];
+yt_hat[i,1] = a + b*yt[i,2];
 }
 }
 model {
+// Priors
 sigma_y ~ uniform(0,100);
 sigma_t ~ uniform(0,100);
 rho_yt ~ uniform(-1,1);
@@ -62,6 +75,8 @@ d ~ normal (0,100);
 b ~ normal (0,100);
 a ~ normal (0,100);
 g ~ normal (0,100);
+
+// Posterior
 for (i in 1:n)
 transpose(yt[i]) ~ multi_normal(transpose(yt_hat[i]), Sigma_yt);
 }
