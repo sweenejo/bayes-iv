@@ -22,36 +22,35 @@ library(rstan)
 #---------------------------------------------------------
 
 # Generate data from Sommer-Zeger in Table 3.
-sommer_zeger <- tibble(zobs = c(0, 0, 1, 1, 1, 1),
-                       dobs = c(0, 0, 0, 0, 1, 1),
-                       yobs = c(0, 1, 0, 1, 0, 1),
-                       freq = c(75, 11514, 34, 2385, 12, 9663))
+NC <- tibble(Yobs_NC = c(0, 1),
+                       freq = c(74, 11514))
 
-sommer_zeger <- sommer_zeger[rep(attr(sommer_zeger, "row.names"), sommer_zeger$freq), 1:3]
+NC <- NC[rep(attr(NC, "row.names"), NC$freq), 1]
+
+dat <- list(N_c = c(9675, 12094),
+            Yobs_C1 = c(9663, 9675),
+            Yobs_N1 = c(2385, 2419),
+            Yobs_NC0 = c(11514, 11588),
+            N = c(11588),
+            Yobs_NC = c(rep(0,74), rep(1, 11514)))
 
 # Replicate Figure 1 of CACE posterior without exclusion restriction.
 # Stan model
 model <- "
 data {
-int<lower=0> n; // Number of individuals in the sample
-vector[n] zobs; // Individual assignment: 0 is not assigned, 1 assigned
-vector[n] dobs; // Individual treatment: 0 is not treated, 1 treated
-vector[n] yobs; // Individual outcome: 0 is dead, 1 is alive
-}
-
-transformed data {
-int N_c;
-int N_1;
-N_c=9663+12;
-N_1=1;
+int<lower=0> N;
+int<lower=0> N_c[2]; // Cardinal of units of compliers and total observed
+int<lower=0> Yobs_C1[2];
+int<lower=0> Yobs_N1[2];
+int<lower=0> Yobs_NC[N];
 }
 
 parameters {
-real<lower=-10,upper=10> eta_c0;
-real<lower=-10,upper=10> eta_c1;
-real<lower=-10,upper=10> eta_n0;
-real<lower=-10,upper=10> eta_n1;
-real<lower=0,upper=1> omega; // Proportion of sample who are compliers
+real<lower=0,upper=1> omega;
+real<lower=0,upper=1> eta_c0;
+real<lower=0,upper=1> eta_c1;
+real<lower=0,upper=1> eta_n0;
+real<lower=0,upper=1> eta_n1;
 }
 
 transformed parameters {
@@ -60,30 +59,31 @@ transformed parameters {
 
 model {
 // Priors
-eta_c0 ~ uniform(-10,10);
-eta_c1 ~ uniform(-10,10);
-eta_n0 ~ uniform(-10,10);
-eta_n1 ~ uniform(-10,10);
-omega ~ uniform(0,1);
+omega ~ beta(1,1);
+eta_c0 ~ beta(1,1);
+eta_c1 ~ beta(1,1);
+eta_n0 ~ beta(1,1);
+eta_n1 ~ beta(1,1);
 
-// Postieror distribution (Note: written as the product of 5 distributions)
+// Likelihood sampling
+N_c[1] ~ binomial(N_c[2], omega);
+Yobs_C1[1] ~ binomial(Yobs_C1[2], eta_c1);
+Yobs_N1[1] ~ binomial(Yobs_N1[2], eta_n1);
 
-target += binomial_lpmf(N_c | N_1, omega);
+for (n in 1:N)
+target += log_mix(omega, binomial_lpmf(Yobs_NC[n] | 1, eta_c0), binomial_lpmf(Yobs_NC[n] | 1, eta_n0));
+// Note look at log_mix in reference manual.  groups.google.com/forum/#!topic/stan-users/FH-KuLGScf8
+// Also check out Viviana Garcia Hortons thesis
+// and BIQQ replication
+}
 
-//if()
-//target += binomial(yobs[i] | eta_c0)
-
-//else if ()
-
-//else if ()
-
-//else ()
-
-
+generated quantities{
+real CACE;
+CACE = eta_c1-eta_c0;
 }
 "
 
-fit <- stan(model_code = model, data=sommer_zeger, iter = 1000, chains = 3)
+fit <- stan(model_code = model, data=dat, iter = 1000, chains = 3)
 
 print(fit)
 
