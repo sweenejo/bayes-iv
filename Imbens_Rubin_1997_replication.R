@@ -22,11 +22,6 @@ library(rstan)
 #---------------------------------------------------------
 
 # Generate data from Sommer-Zeger in Table 3.
-NC <- tibble(Yobs_NC = c(0, 1),
-                       freq = c(74, 11514))
-
-NC <- NC[rep(attr(NC, "row.names"), NC$freq), 1]
-
 dat <- list(N_c = c(9675, 12094),
             Yobs_C1 = c(9663, 9675),
             Yobs_N1 = c(2385, 2419),
@@ -34,15 +29,15 @@ dat <- list(N_c = c(9675, 12094),
             N = c(11588),
             Yobs_NC = c(rep(0,74), rep(1, 11514)))
 
-# Replicate Figure 1 of CACE posterior without exclusion restriction.
+# Replicate Figure 1 and 3 of CACE posterior with/out exclusion restriction.
 # Stan model
 model <- "
 data {
-int<lower=0> N;
+int<lower=0> N; // Number of units missing a compliance observation
 int<lower=0> N_c[2]; // Cardinal of units of compliers and total observed
-int<lower=0> Yobs_C1[2];
-int<lower=0> Yobs_N1[2];
-int<lower=0> Yobs_NC[N];
+int<lower=0> Yobs_C1[2]; // Compliance treatment
+int<lower=0> Yobs_N1[2]; // Noncompliance treatment
+int<lower=0> Yobs_NC[N]; // Either noncompliance or compliance control
 }
 
 parameters {
@@ -57,7 +52,7 @@ parameters {
 real<lower=0,upper=1> omega;
 real<lower=0,upper=1> eta_c0;
 real<lower=0,upper=1> eta_c1;
-real<lower=0,upper=1> eta_n;
+real<lower=0,upper=1> eta_n; // Note: when exclusion is assumed n=n0=n1
 }
 
 transformed parameters {
@@ -97,6 +92,7 @@ target += log_mix(omega, binomial_lpmf(Yobs_NC[n] | 1, eta_c0), binomial_lpmf(Yo
 }
 
 generated quantities{
+// Calculate compliance average causal effect (CACE)
 real CACE;
 CACE = eta_c1-eta_c0;
 }
