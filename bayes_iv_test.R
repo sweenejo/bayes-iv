@@ -15,8 +15,8 @@ n <- 1000
 z <- rnorm(n)
 
 # Specify error terms with for 1st and 2nd stage
-e <- rnorm(n, 0.1)
-u <- rnorm(n, 0.1)
+e <- rnorm(n, sd = 1)
+u <- rnorm(n, sd = 1)
 
 # Generate 1st and 2nd stage outcomes
 x <- 1 + 2 * z + 0.5 * u + e  # Note: x is correlated with u, which makes x endogenous and OLS inconsistent
@@ -86,5 +86,6 @@ data <- list(yt=d_matrix, z=z, n=n)
 fit <- stan(model_code = model, data=data, iter = 1000, chains = 3, pars=c("alpha1", "alpha2", "beta1", "beta2", "sigma_t", "sigma_y", "rho_yt"))
 
 print(fit)
+plot(fit)
+stan_trace(fit)
 
-d <- as.data.frame(fit)

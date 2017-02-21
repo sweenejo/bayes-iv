@@ -40,8 +40,8 @@ n <- 1000
 z <- rnorm(n)
 
 # Specify error terms with for 1st and 2nd stage
-e <- rnorm(n, 0.1)
-u <- rnorm(n, 0.1)
+e <- rnorm(n, sd = 1)
+u <- rnorm(n, sd = 1)
 
 # Generate 1st and 2nd stage outcomes
 x <- 1 + 2 * z + 0.5 * u + e
@@ -62,8 +62,8 @@ summary(ols)
 ```
 Coefficients:
             Estimate Std. Error t value Pr(>|t|)    
-(Intercept)  2.95787    0.03492   84.72   <2e-16 ***
-x            1.61639    0.01379  117.18   <2e-16 ***
+(Intercept)  2.93101    0.03328   88.07   <2e-16 ***
+x            1.60188    0.01345  119.13   <2e-16 ***
 ---
 ```
 
@@ -86,8 +86,8 @@ summary(iv)
 ```
 Coefficients:
             Estimate Std. Error t value Pr(>|t|)    
-(Intercept)  3.07652    0.03709   82.96   <2e-16 ***
-x            1.51300    0.01635   92.51   <2e-16 ***
+(Intercept)  3.02611    0.03497   86.52   <2e-16 ***
+x            1.50226    0.01583   94.87   <2e-16 ***
 ---
 ```
 
@@ -123,7 +123,7 @@ Simulation (R/Stan code is on sweenejo.github.io)
 
 ## Instrumental variables approach
 
-Simulation (R/Stan code is on sweenejo.github.io)
+Simulation
 
 \center{$\begin{bmatrix}u\\e \end{bmatrix}=\begin{bmatrix}\sigma_1^2&\rho\sigma_1\sigma_2\\ \rho\sigma_1\sigma_2&\sigma_2^2\end{bmatrix}$}
 
@@ -131,7 +131,7 @@ Simulation (R/Stan code is on sweenejo.github.io)
 
 ## Instrumental variables approach
 
-Simulation (R/Stan code is on sweenejo.github.io)
+Simulation
 
 - Likelihood function will be a multivariate normal.
 - Specify uniform priors for the variance parameters, and flat normals for the others.
@@ -144,7 +144,7 @@ Simulation (R/Stan code is on sweenejo.github.io)
 
 ## Instrumental variables approach
 
-Simulation (R/Stan code is on sweenejo.github.io)
+Simulation
 
 ![Parameter Estimates](bayes_iv_est.jpeg)
 
