@@ -2,8 +2,7 @@
 # 
 # Authors      : Jonathan Sweeney
 # Date         : 2/15/2017
-# Description  : The following code reproduces the results from Imbens and Rubin (1997) using 
-#              : Stan as the 
+# Description  : The following code reproduces the results from Imbens and Rubin (1997) using Stan
 #
 #---------------------------------------------------------
 
@@ -42,17 +41,17 @@ int<lower=0> Yobs_NC[N]; // Either noncompliance or compliance control
 
 parameters {
 // (no exlusion)
-//real<lower=0,upper=1> omega;
-//real<lower=0,upper=1> eta_c0;
-//real<lower=0,upper=1> eta_c1;
-//real<lower=0,upper=1> eta_n0;
-//real<lower=0,upper=1> eta_n1;
-
-// (exlusion)
 real<lower=0,upper=1> omega;
 real<lower=0,upper=1> eta_c0;
 real<lower=0,upper=1> eta_c1;
-real<lower=0,upper=1> eta_n; // Note: when exclusion is assumed n=n0=n1
+real<lower=0,upper=1> eta_n0;
+real<lower=0,upper=1> eta_n1;
+
+// (exlusion)
+//real<lower=0,upper=1> omega;
+//real<lower=0,upper=1> eta_c0;
+//real<lower=0,upper=1> eta_c1;
+//real<lower=0,upper=1> eta_n; // Note: when exclusion is assumed n=n0=n1
 }
 
 transformed parameters {
@@ -61,33 +60,33 @@ transformed parameters {
 
 model {
 // Priors (no exlusion)
-//omega ~ beta(1,1);
-//eta_c0 ~ beta(1,1);
-//eta_c1 ~ beta(1,1);
-//eta_n0 ~ beta(1,1);
-//eta_n1 ~ beta(1,1);
-
-// Priors (exlusion)
 omega ~ beta(1,1);
 eta_c0 ~ beta(1,1);
 eta_c1 ~ beta(1,1);
-eta_n ~ beta(1,1);
+eta_n0 ~ beta(1,1);
+eta_n1 ~ beta(1,1);
+
+// Priors (exlusion)
+//omega ~ beta(1,1);
+//eta_c0 ~ beta(1,1);
+//eta_c1 ~ beta(1,1);
+//eta_n ~ beta(1,1);
 
 // Likelihood sampling (no exlusion)
-//N_c[1] ~ binomial(N_c[2], omega);
-//Yobs_C1[1] ~ binomial(Yobs_C1[2], eta_c1);
-//Yobs_N1[1] ~ binomial(Yobs_N1[2], eta_n1);
-
-//for (n in 1:N)
-//target += log_mix(omega, binomial_lpmf(Yobs_NC[n] | 1, eta_c0), binomial_lpmf(Yobs_NC[n] | 1, eta_n0));
-
-// Likelihood sampling (exlusion)
 N_c[1] ~ binomial(N_c[2], omega);
 Yobs_C1[1] ~ binomial(Yobs_C1[2], eta_c1);
-Yobs_N1[1] ~ binomial(Yobs_N1[2], eta_n);
+Yobs_N1[1] ~ binomial(Yobs_N1[2], eta_n1);
 
 for (n in 1:N)
-target += log_mix(omega, binomial_lpmf(Yobs_NC[n] | 1, eta_c0), binomial_lpmf(Yobs_NC[n] | 1, eta_n));
+target += log_mix(omega, binomial_lpmf(Yobs_NC[n] | 1, eta_c0), binomial_lpmf(Yobs_NC[n] | 1, eta_n0));
+
+// Likelihood sampling (exlusion)
+//N_c[1] ~ binomial(N_c[2], omega);
+//Yobs_C1[1] ~ binomial(Yobs_C1[2], eta_c1);
+//Yobs_N1[1] ~ binomial(Yobs_N1[2], eta_n);
+
+//for (n in 1:N)
+//target += log_mix(omega, binomial_lpmf(Yobs_NC[n] | 1, eta_c0), binomial_lpmf(Yobs_NC[n] | 1, eta_n));
 
 }
 
@@ -102,4 +101,5 @@ fit <- stan(model_code = model, data=dat, iter = 1000, chains = 3)
 
 print(fit)
 stan_dens(fit)
+stan_hist(fit)
 

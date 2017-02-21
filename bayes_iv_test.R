@@ -14,15 +14,12 @@ library(AER)
 n <- 1000
 z <- rnorm(n)
 
-# Specify error terms with some correlation (This makes OLS inconsistent)
+# Specify error terms with for 1st and 2nd stage
 e <- rnorm(n, 0.1)
-#u <- 0.5 * e + rnorm(n, 0.01)
 u <- rnorm(n, 0.1)
 
-# Specify that the regressor of interest is correlated with the error term.
-
 # Generate 1st and 2nd stage outcomes
-x <- 1 + 2 * z + 0.5 * u + e
+x <- 1 + 2 * z + 0.5 * u + e  # Note: x is correlated with u, which makes x endogenous and OLS inconsistent
 y <- 3 + 1.5 * x + u
 
 d <- data.frame(z, x, y)
@@ -44,10 +41,10 @@ matrix[n,2] yt;
 vector[n] z;
 }
 parameters {
-real b;
-real d;
-real a;
-real g;
+real alpha1;
+real alpha2;
+real beta1;
+real beta2;
 real<lower=0,upper=100> sigma_t;
 real<lower=0,upper=100> sigma_y;
 real<lower=-1,upper=1> rho_yt;
@@ -62,8 +59,8 @@ Sigma_yt[2,1] = Sigma_yt[1,2];
 
 // Specify model
 for (i in 1:n) {
-yt_hat[i,2] = g + d*z[i];
-yt_hat[i,1] = a + b*yt[i,2];
+yt_hat[i,2] = alpha2 + beta2*z[i];
+yt_hat[i,1] = alpha1 + beta1*yt[i,2];
 }
 }
 model {
@@ -71,10 +68,10 @@ model {
 sigma_y ~ uniform(0,100);
 sigma_t ~ uniform(0,100);
 rho_yt ~ uniform(-1,1);
-d ~ normal (0,100);
-b ~ normal (0,100);
-a ~ normal (0,100);
-g ~ normal (0,100);
+alpha1 ~ normal (0,100);
+alpha2 ~ normal (0,100);
+beta1 ~ normal (0,100);
+beta2 ~ normal (0,100);
 
 // Posterior
 for (i in 1:n)
@@ -86,7 +83,7 @@ d_list <- list(y1=y, y2=x)
 d_matrix <- as.matrix(data.frame(d_list))
 data <- list(yt=d_matrix, z=z, n=n)
 
-fit <- stan(model_code = model, data=data, iter = 1000, chains = 3, pars=c("a", "b", "d", "g", "sigma_t", "sigma_y", "rho_yt"))
+fit <- stan(model_code = model, data=data, iter = 1000, chains = 3, pars=c("alpha1", "alpha2", "beta1", "beta2", "sigma_t", "sigma_y", "rho_yt"))
 
 print(fit)
 
